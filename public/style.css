@@ -1,0 +1,239 @@
+:root {
+  --bg: #0c0f0d;
+  --panel: #141815;
+  --ink: #e8ede9;
+  --muted: #8a988e;
+  --accent: #33ffa0;
+  --accent-dim: #1c8f5c;
+  --warn: #ffb648;
+  --mono: "SFMono-Regular", "JetBrains Mono", Consolas, Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: red 1px solid;
+}
+
+header h1 {
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+  color: var(--accent);
+}
+
+#status {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+#camera-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #223027;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The scan target — decode logic crops exactly this region out of the frame,
+   so its position/size here must stay in percentage terms (see ui.js). */
+#target-box {
+  position: absolute;
+  top: 32%;
+  left: 20%;
+  width: 60%;
+  height: 26%;
+  border: 2px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  transition: border-color 0.15s ease;
+}
+
+#target-box.found {
+  border-color: var(--warn);
+}
+
+#scan-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+#video {
+  touch-action: manipulation;
+}
+
+.focus-ring {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  margin-left: -27px;
+  margin-top: -27px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: focus-pulse 0.7s ease-out forwards;
+}
+
+@keyframes focus-pulse {
+  0% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0; }
+}
+
+#focus-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid #223027;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+#focus-controls label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#focus-slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+button {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-dim);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#startcam {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+  color: #06110b;
+  font-weight: 600;
+}
+
+#fields, #Pre-Setfields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid #223027;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+#fields label, #Pre-Setfields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+#fields input, #Pre-Setfields select {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  padding: 10px;
+  background: #0a0d0b;
+  border: 1px solid #223027;
+  border-radius: 6px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+#fields input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+#All-Fields {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  border-radius: 10px;
+}
+
+#General-Layout {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+#photo-preview {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #223027;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #target-box {
+    transition: none;
+  }
+}

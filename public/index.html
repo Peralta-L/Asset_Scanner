@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Asset Tag Scanner</title>
+<link rel="stylesheet" href="style.css">
+<!-- Tesseract (OCR fallback) and ZXing (DataMatrix fallback for browsers without
+     native BarcodeDetector, e.g. Safari/Firefox) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"></script>
+<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Asset Tag Scanner</h1>
+    <p id="status" role="status">Press "Start camera" to begin.</p>
+  </header>
+  <div id="camera-container">
+    <video id="video" autoplay playsinline muted></video>
+    <div id="target-box" aria-hidden="true"></div>
+    <div id="scan-hint" aria-hidden="true">Tap the label to focus</div>
+  </div>
+
+  <div id="focus-controls" hidden>
+    <label for="focus-slider">Manual focus (near → far)</label>
+    <input type="range" id="focus-slider" min="0" max="1" step="0.01">
+  </div>
+
+  <div id="controls">
+    <button id="startcam" type="button">Start camera</button>
+    <button id="stopcam" type="button" disabled>Stop camera</button>
+    <button id="ocr-fallback" type="button" disabled>Can't find code — scan text instead</button>
+  </div>
+
+  <div id="All-Fields">
+    <div id="fields">
+      <label>
+        <span>Inventory sticker</span>
+        <input type="text" id="inventory-sticker" placeholder="E12345" inputmode="text">
+      </label>
+      <label>
+        <span>Service tag</span>
+        <input type="text" id="service-tag" placeholder="ABC1234" inputmode="text">
+      </label>
+    </div>
+    
+    <div id="Pre-Setfields">
+      <label>
+        <span>Brand</span>
+        <select id="brand">
+          <option value="Dell">Dell</option>
+          <option value="HP">HP</option>
+          <option value="Lenovo">Lenovo</option>
+          <option value="Jabra">Jabra</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>   
+
+      <label>
+        <span>Item type</span>
+        <select id="item-type">
+          <option value="Laptop">Laptop</option>
+          <option value="Desktop">Desktop</option>
+          <option value="Monitor">Monitor</option>
+          <option value="Headsets">Headsets</option>
+          <option value="Docking-station">Docking station</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <div id="fields">
+    <label>
+      <span>Model</span>
+      <input type="text" id="model" placeholder="e.g. Dell Pro 14 Plus" inputmode="text">
+    </label>
+
+    <label>
+      <span>Assign to:</span>
+      <input type="text" id="assigned-to" placeholder="e.g. Speedy Gonzales" inputmode="text">
+    </label>
+  </div>
+  <div id="controls">
+    <button id="submit" type="button">Submit</button>
+    <button id="Review-Submitions" type="button">Review Submissions</button>
+  </div>
+
+  <img id="photo-preview" alt="Last captured photo" hidden>
+
+  <!-- Working canvases — never shown, used only for decode/OCR pixel access -->
+  <canvas id="scratch-canvas" hidden></canvas>
+  <canvas id="photo-canvas" hidden></canvas>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

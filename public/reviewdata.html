@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Review Data</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <main>
+            <header>
+                <h1>Review Data</h1>
+            </header>
+            <div id="review-container">
+                <p id="status">INFO</p>
+                <table id="review-table">
+                    <thead>
+                        <tr>
+                            <th>Inventory Number</th>
+                            <th>Service Number</th>
+                            <th>Model</th>
+                            <th>Brand</th>
+                            <th>Item Type</th>
+                            <th>Assigned To</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="review-data">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="controls">
+                <button id="back-button" type="button">Back to Scanner</button>
+                <button id="clear-button" type="button">Clear Data</button>
+                <button id="export-button" type="button">Export to TopDesk</button>
+            </div>
+        </main>
+    <script type="module" src="review.js"></script>
+    </body>
+</html>
