@@ -21,6 +21,7 @@ const ReviewBtn = document.getElementById('Review-Submitions');
 let cameraStream = null;
 let cameraTrack = null;
 let scanLoop = null;
+let currentFocusCaps = {};
 
 // Shows a brief pulsing ring where the user tapped, as feedback that the tap
 // registered (even on devices where tap-to-focus itself isn't supported).
@@ -36,6 +37,7 @@ function showFocusRing(clientX, clientY) {
 
 async function handleTapToFocus(clientX, clientY) {
     if (!cameraTrack) return;
+    if (!currentFocusCaps.hasTapToFocus && !currentFocusCaps.hasPointsOfInterest) return;
     showFocusRing(clientX, clientY);
 
     const rect = video.getBoundingClientRect();
@@ -84,6 +86,7 @@ startBtn.addEventListener('click', async () => {
         // focus-distance range — otherwise tap-to-focus (always wired above)
         // is the only control available, which is normal and fine.
         const focusCaps = getFocusCapabilities(track);
+        currentFocusCaps = focusCaps;
         if (focusCaps.hasManualDistance) {
             focusSlider.min = focusCaps.distanceMin;
             focusSlider.max = focusCaps.distanceMax;
@@ -92,6 +95,15 @@ startBtn.addEventListener('click', async () => {
             focusControls.hidden = false;
         } else {
             focusControls.hidden = true;
+        }
+
+        // Safari/iOS exposes none of the focus-control APIs at all (no
+        // focusMode, focusDistance, or pointsOfInterest via getCapabilities).
+        // Tapping does nothing there, so hide the hint instead of showing
+        // guidance for a gesture that silently no-ops on that platform.
+        const scanHint = document.getElementById('scan-hint');
+        if (scanHint) {
+            scanHint.hidden = !(focusCaps.hasTapToFocus || focusCaps.hasPointsOfInterest);
         }
 
         resumeScanning();
@@ -112,6 +124,7 @@ stopBtn.addEventListener('click', () => {
     cameraStream = null;
     cameraTrack = null;
     scanLoop = null;
+    currentFocusCaps = {};
 
     startBtn.disabled = false;
     stopBtn.disabled = true;

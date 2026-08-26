@@ -126,9 +126,10 @@ let zxingReader = null;
 
 function getZxingReader() {
     if (!zxingReader) {
-        const dmHints = new Map();
-        dmHints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        zxingReader = new ZXing.BrowserDatamatrixCodeReader(dmHints);
+        // BrowserDatamatrixCodeReader's constructor only accepts a scan-interval
+        // number (ms between scan attempts), not a hints map — passing a Map
+        // here was silently ignored, so TRY_HARDER was never actually applied.
+        zxingReader = new ZXing.BrowserDatamatrixCodeReader(500);
     }
     return zxingReader;
 }
