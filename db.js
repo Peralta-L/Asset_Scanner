@@ -1,19 +1,17 @@
-import express from 'express';
-import sqlite3 from 'sqlite3';
+import Database from 'better-sqlite3';
 
-const db = new sqlite3.Database('./assets.db');
+const db = new Database('./assets.db');
 
-db.run(`
-    CREATE TABLE IF NOT EXISTS assets(
+db.exec(`
+    CREATE TABLE IF NOT EXISTS assets (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        InventoryNumber TEXT NOT NULL UNIQUE ,
-        SerialNumber TEXT NOT NULL UNIQUE,
-        Model TEXT NOT NULL,
-        Brand TEXT NOT NULL,
-        ItemType TEXT NOT NULL,
-        AssignedTo TEXT,
-        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
+        InventoryNumber TEXT NOT NULL,
+        SerialNumber TEXT NOT NULL,
+        Model TEXT,
+        Brand TEXT,
+        ItemType TEXT,
+        AssignedTo TEXT
+    )
 `);
 
 export default db;
