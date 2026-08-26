@@ -47,12 +47,19 @@ export function stopCamera(stream) {
 // some also offer a real focusDistance range.
 export function getFocusCapabilities(track) {
     if (!track || !track.getCapabilities) return {};
+
     const caps = track.getCapabilities();
+
+    const hasRealManualDistance =
+        caps.focusDistance &&
+        typeof caps.focusDistance.min === "number" &&
+        typeof caps.focusDistance.max === "number";
+
     return {
-        hasManualDistance: !!caps.focusDistance,
-        distanceMin: caps.focusDistance ? caps.focusDistance.min : null,
-        distanceMax: caps.focusDistance ? caps.focusDistance.max : null,
-        distanceStep: caps.focusDistance ? caps.focusDistance.step : null,
+        hasManualDistance: hasRealManualDistance,
+        distanceMin: hasRealManualDistance ? caps.focusDistance.min : null,
+        distanceMax: hasRealManualDistance ? caps.focusDistance.max : null,
+        distanceStep: hasRealManualDistance ? caps.focusDistance.step || 0.01 : null,
         hasTapToFocus: !!(caps.focusMode && caps.focusMode.includes('single-shot')),
         hasPointsOfInterest: !!caps.pointsOfInterest
     };
@@ -63,11 +70,26 @@ export function getFocusCapabilities(track) {
 // than assuming that range). This is the most reliable fix for close-up
 // DataMatrix scanning — it bypasses autofocus hunting entirely.
 export async function setFocusDistance(track, distance) {
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+
+    if (
+        !caps.focusDistance ||
+        typeof caps.focusDistance.min !== "number" ||
+        typeof caps.focusDistance.max !== "number" ||
+        !caps.focusMode ||
+        !caps.focusMode.includes("manual")
+    ) {
+        console.warn("Manual focus not supported on this device.");
+        return false;
+    }
+
     try {
-        await track.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: distance }] });
+        await track.applyConstraints({
+            advanced: [{ focusMode: "manual", focusDistance: distance }]
+        });
         return true;
     } catch (e) {
-        console.warn('Manual focus distance not supported:', e);
+        console.warn("Manual focus distance failed:", e);
         return false;
     }
 }
