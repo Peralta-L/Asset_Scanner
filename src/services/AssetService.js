@@ -23,6 +23,6 @@ export async function DeleteAssetService(id) {
     db.prepare(`DELETE FROM assets WHERE id = ?`).run(id);
 }
 
-export async function DeleteAllAssetsService(){
+export async function DeleteAllAssetService(){
     db.prepare(`DELETE FROM assets`).run();
 }
