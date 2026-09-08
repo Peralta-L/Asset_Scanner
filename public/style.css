@@ -13,8 +13,15 @@
   box-sizing: border-box;
 }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
+  width: 100%;
+  overflow-x: hidden;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--mono);
@@ -25,6 +32,11 @@ main {
   max-width: 480px;
   margin: 0 auto;
   padding: 20px 16px 40px;
+  /* Keeps content clear of notches and the home-indicator area on iOS,
+     without adding any extra space on devices that don't have them. */
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -49,6 +61,8 @@ header h1 {
   position: relative;
   width: 100%;
   aspect-ratio: 4 / 3;
+  max-height: 65vh; /* keeps the camera view from pushing controls off-screen in landscape */
+  margin: 0 auto;
   background: #000;
   border-radius: 10px;
   overflow: hidden;
@@ -154,6 +168,7 @@ button {
   font-family: var(--mono);
   font-size: 0.85rem;
   padding: 12px 14px;
+  min-height: 44px; /* comfortable touch-target size on phones */
   border-radius: 8px;
   border: 1px solid var(--accent-dim);
   background: var(--panel);
@@ -205,7 +220,10 @@ button:disabled {
 
 #fields input, #Pre-Setfields select {
   font-family: var(--mono);
-  font-size: 0.95rem;
+  /* 16px is the iOS Safari threshold below which focusing an input
+     triggers an automatic (and awkward) page zoom-in. */
+  font-size: 16px;
+  width: 100%;
   padding: 10px;
   background: #0a0d0b;
   border: 1px solid #223027;
@@ -222,8 +240,15 @@ button:disabled {
 #All-Fields {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 10px;
   border-radius: 10px;
+}
+
+#All-Fields > #fields,
+#All-Fields > #Pre-Setfields {
+  flex: 1 1 160px; /* side-by-side when there's room, stacked once a panel would drop under ~160px */
+  min-width: 0;    /* lets flex children shrink below their content's natural width instead of overflowing */
 }
 
 #General-Layout {
@@ -242,4 +267,82 @@ button:disabled {
   #target-box {
     transition: none;
   }
+}
+
+/* ---------- Review page (reviewdata.html) ---------- */
+
+.review-page {
+  /* Phones are already narrower than this, so it only helps larger screens
+     give the table more room before falling back to horizontal scroll. */
+  max-width: 900px;
+}
+
+#review-container {
+  background: var(--panel);
+  border: 1px solid #223027;
+  border-radius: 10px;
+  padding: 4px;
+  /* A 7-column table won't fit a phone width no matter how tight the columns
+     get — let it scroll horizontally inside its own box instead of forcing
+     the whole page wider than the viewport. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+#review-table {
+  width: 100%;
+  min-width: 640px; /* below this, columns get unreadably cramped — scroll instead of squeeze */
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+#review-table th,
+#review-table td {
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #223027;
+}
+
+#review-table th {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
+}
+
+#review-table .actions-cell {
+  white-space: nowrap;
+}
+
+#review-table .edit-input {
+  font-family: var(--mono);
+  font-size: 16px; /* prevents iOS auto-zoom on focus, same as the scanner form fields */
+  width: 100%;
+  min-width: 90px;
+  padding: 6px 8px;
+  background: #0a0d0b;
+  border: 1px solid #223027;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+#review-table button {
+  padding: 6px 10px;
+  min-height: 36px; /* smaller than the main action buttons since these sit inside table cells */
+  font-size: 0.75rem;
+}
+
+#pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+#pagination-controls button {
+  padding: 8px 12px;
+  min-height: 40px;
 }
