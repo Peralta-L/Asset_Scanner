@@ -237,6 +237,10 @@ button:disabled {
   outline-offset: 1px;
 }
 
+#fields input:invalid:not(:placeholder-shown) {
+  border-color: var(--warn);
+}
+
 #All-Fields {
   display: flex;
   flex-direction: row;

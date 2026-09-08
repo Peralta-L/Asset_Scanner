@@ -259,13 +259,31 @@ ocrBtn.addEventListener('click', async () => {
 
 submitBtn.addEventListener('click', async () => {
 
+    const inventoryInput = document.getElementById('inventory-sticker');
+    const serviceTagInput = document.getElementById('service-tag');
+    const modelInput = document.getElementById('model');
+    const assignedToInput = document.getElementById('assigned-to');
+
+    // Validate against the pattern/maxlength/required rules set in the HTML
+    // (inventory sticker: E + 4-6 digits, service tag: 5-12 alphanumeric,
+    // etc). reportValidity() shows the browser's native inline error bubble
+    // on whichever field is invalid and focuses it, so nothing bad reaches
+    // the server and the user sees exactly what to fix.
+    const fieldsToValidate = [inventoryInput, serviceTagInput, modelInput, assignedToInput];
+    const firstInvalid = fieldsToValidate.find(input => !input.checkValidity());
+    if (firstInvalid) {
+        firstInvalid.reportValidity();
+        setStatus('Please fix the highlighted field before submitting.');
+        return;
+    }
+
     const data = {
-        InventoryNumber: document.getElementById('inventory-sticker').value,
-        SerialNumber: document.getElementById('service-tag').value,
-        Model: document.getElementById('model').value,
+        InventoryNumber: inventoryInput.value,
+        SerialNumber: serviceTagInput.value,
+        Model: modelInput.value,
         Brand: document.getElementById('brand').value,
         ItemType: document.getElementById('item-type').value,
-        AssignedTo: document.getElementById('assigned-to').value
+        AssignedTo: assignedToInput.value
     }
 
     const statusEl = document.getElementById('status');
@@ -283,6 +301,13 @@ submitBtn.addEventListener('click', async () => {
 
         if (response.ok) {
             statusEl.textContent = 'Asset submitted successfully!';
+
+            // Clear just the scan-derived fields so the form is ready for the
+            // next device — Brand/Item type/Model/Assigned to are left as-is
+            // since batches of the same item type often repeat those values.
+            inventoryInput.value = '';
+            serviceTagInput.value = '';
+            inventoryInput.focus();
         } else {
             statusEl.textContent = `Error submitting asset: ${result.error}`;
         }
