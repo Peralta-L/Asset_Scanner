@@ -119,6 +119,37 @@ export async function focusAtPoint(track, xNorm, yNorm) {
     }
 }
 
+// Reports whether this device/browser exposes controllable zoom, and its
+// range. Support is inconsistent — mainly Chrome/Android; iOS Safari does
+// not expose this to the web at all — so callers should always check hasZoom
+// before showing any zoom UI rather than assuming it exists.
+export function getZoomCapabilities(track) {
+    if (!track || !track.getCapabilities) return {};
+
+    const caps = track.getCapabilities();
+    const hasRealZoom =
+        caps.zoom &&
+        typeof caps.zoom.min === "number" &&
+        typeof caps.zoom.max === "number";
+
+    return {
+        hasZoom: hasRealZoom,
+        zoomMin: hasRealZoom ? caps.zoom.min : null,
+        zoomMax: hasRealZoom ? caps.zoom.max : null,
+        zoomStep: hasRealZoom ? (caps.zoom.step || 0.1) : null
+    };
+}
+
+export async function setZoom(track, value) {
+    try {
+        await track.applyConstraints({ advanced: [{ zoom: value }] });
+        return true;
+    } catch (e) {
+        console.warn('Zoom not supported or failed:', e);
+        return false;
+    }
+}
+
 // Grabs the highest-resolution still the device can produce, for the OCR
 // fallback path (OCR benefits from real resolution; live barcode scanning
 // does not, since it works off small cropped regions instead).

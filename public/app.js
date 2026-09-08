@@ -1,4 +1,4 @@
-import { startCamera, stopCamera, captureFullResPhoto, getFocusCapabilities, setFocusDistance, focusAtPoint } from '../camera.js';
+import { startCamera, stopCamera, captureFullResPhoto, getFocusCapabilities, setFocusDistance, focusAtPoint, getZoomCapabilities, setZoom } from '../camera.js';
 import { getTargetBoxInVideoCoords, setStatus, setFields, flashTargetBox } from '../ui.js';
 import { ScanLoop } from '../scanner.js';
 import { runOcr, getOcrWorker } from '../ocr.js';
@@ -11,6 +11,8 @@ const photoCanvas = document.getElementById('photo-canvas');
 const photoPreview = document.getElementById('photo-preview');
 const focusControls = document.getElementById('focus-controls');
 const focusSlider = document.getElementById('focus-slider');
+const zoomControls = document.getElementById('zoom-controls');
+const zoomSlider = document.getElementById('zoom-slider');
 
 const startBtn = document.getElementById('startcam');
 const stopBtn = document.getElementById('stopcam');
@@ -48,7 +50,53 @@ async function handleTapToFocus(clientX, clientY) {
     if (ok) setStatus('Focusing...');
 }
 
-cameraContainer.addEventListener('click', (e) => handleTapToFocus(e.clientX, e.clientY));
+cameraContainer.addEventListener('click', (e) => {
+    if (Date.now() < suppressTapUntil) return; // just finished a pinch, not a real tap
+    handleTapToFocus(e.clientX, e.clientY);
+});
+
+// ---------- Pinch-to-zoom ----------
+let suppressTapUntil = 0;
+let pinchState = null; // { startDist, startZoom, min, max }
+
+function touchDistance(touches) {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+}
+
+cameraContainer.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 2 || !cameraTrack) return;
+
+    const zoomCaps = getZoomCapabilities(cameraTrack);
+    if (!zoomCaps.hasZoom) return;
+
+    e.preventDefault();
+    pinchState = {
+        startDist: touchDistance(e.touches),
+        startZoom: parseFloat(zoomSlider.value) || zoomCaps.zoomMin,
+        min: zoomCaps.zoomMin,
+        max: zoomCaps.zoomMax
+    };
+}, { passive: false });
+
+cameraContainer.addEventListener('touchmove', (e) => {
+    if (!pinchState || e.touches.length !== 2) return;
+    e.preventDefault();
+
+    const ratio = touchDistance(e.touches) / pinchState.startDist;
+    const newZoom = Math.min(pinchState.max, Math.max(pinchState.min, pinchState.startZoom * ratio));
+
+    zoomSlider.value = newZoom;
+    setZoom(cameraTrack, newZoom);
+}, { passive: false });
+
+cameraContainer.addEventListener('touchend', () => {
+    if (pinchState) {
+        suppressTapUntil = Date.now() + 400;
+        pinchState = null;
+    }
+});
 
 function onScanResult(result) {
     setFields({ serviceTag: result });
@@ -106,6 +154,20 @@ startBtn.addEventListener('click', async () => {
             scanHint.hidden = !(focusCaps.hasTapToFocus || focusCaps.hasPointsOfInterest);
         }
 
+        // Zoom slider — reliable control everywhere zoom is supported (mostly
+        // Chrome/Android). Pinch-to-zoom (wired above) works alongside it and
+        // keeps the slider in sync as the user pinches.
+        const zoomCaps = getZoomCapabilities(track);
+        if (zoomCaps.hasZoom) {
+            zoomSlider.min = zoomCaps.zoomMin;
+            zoomSlider.max = zoomCaps.zoomMax;
+            zoomSlider.step = zoomCaps.zoomStep;
+            zoomSlider.value = zoomCaps.zoomMin;
+            zoomControls.hidden = false;
+        } else {
+            zoomControls.hidden = true;
+        }
+
         resumeScanning();
 
         // Fire-and-forget: downloads/inits the OCR worker in the background
@@ -130,12 +192,18 @@ stopBtn.addEventListener('click', () => {
     stopBtn.disabled = true;
     ocrBtn.disabled = true;
     focusControls.hidden = true;
+    zoomControls.hidden = true;
     setStatus('Camera stopped.');
 });
 
 focusSlider.addEventListener('input', () => {
     if (!cameraTrack) return;
     setFocusDistance(cameraTrack, parseFloat(focusSlider.value));
+});
+
+zoomSlider.addEventListener('input', () => {
+    if (!cameraTrack) return;
+    setZoom(cameraTrack, parseFloat(zoomSlider.value));
 });
 
 ocrBtn.addEventListener('click', async () => {

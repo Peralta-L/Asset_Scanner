@@ -28,7 +28,6 @@ main {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: red 1px solid;
 }
 
 header h1 {
@@ -96,7 +95,11 @@ header h1 {
 }
 
 #video {
-  touch-action: manipulation;
+  touch-action: none; /* we handle pinch-to-zoom ourselves; don't let the browser zoom the page */
+}
+
+#camera-container {
+  touch-action: none;
 }
 
 .focus-ring {
@@ -116,7 +119,8 @@ header h1 {
   100% { transform: scale(0.9); opacity: 0; }
 }
 
-#focus-controls {
+#focus-controls,
+#zoom-controls {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -126,14 +130,16 @@ header h1 {
   padding: 12px 14px;
 }
 
-#focus-controls label {
+#focus-controls label,
+#zoom-controls label {
   font-size: 0.72rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-#focus-slider {
+#focus-slider,
+#zoom-slider {
   width: 100%;
   accent-color: var(--accent);
 }
